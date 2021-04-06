@@ -1,0 +1,27 @@
+#lang racket
+
+(define (double a) (+ a a)) 
+(define (halve a) (round (/ a 2))) 
+
+(define (mult a b)
+  (if (= b 0)
+      0
+      (+ a (mult a (- b 1)))))
+(define (mult2 a b)
+  (if (> b a )
+      (mult b a)
+      (mult a b)))
+
+
+(define (expression)  (list (operator) (choose2) (choose2)))
+(define (operator)    (choose '(+ * / - sin cos tan)))
+(define (number)      (random 10))
+
+(define (choose lst)
+  (list-ref lst (random (length lst))))
+
+(define (choose2)
+  (if (= (random 2) 1)
+      (expression)
+      (number))
+  )

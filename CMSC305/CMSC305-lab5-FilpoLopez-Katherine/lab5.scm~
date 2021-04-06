@@ -1,0 +1,62 @@
+#lang racket
+(require eopl)
+
+(define the-lexical-spec
+  '((whitespace (whitespace) skip)
+    (number ("-" digit (arbno digit)) number)
+    (number (digit (arbno digit) "." digit (arbno digit)) number)
+    (number (digit (arbno digit) (or "e" "E") (or "-" "+") digit (arbno digit)) number)
+    (number (digit (arbno digit)) number)
+    (String ("\"" any "\"") string)
+    (String ("\\" any) string)
+    (String ("\/" any) string)
+    (String ("\b" any) string)
+    (String ("\f") string)
+    (String ("\n" ) string)
+    (String ("\r" any) string)
+    (String ("\t") string)
+    
+    ))
+
+(define the-grammar
+  '((json  ("[" (separated-list json ",") "]")  nlist) ;;separated-list allows there to not be a comma at the end of the list
+    (json  (number)                             numval)
+    (json  (booleanT) (true))
+    (json  (booleanF) (false))))
+
+(define-datatype json json?
+  (nlist (numbers (list-of json?)))
+  (numval (num number?)))
+
+(define just-scan
+    (sllgen:make-string-scanner the-lexical-spec the-grammar))
+
+(define scan&parse
+  (sllgen:make-string-parser the-lexical-spec the-grammar))
+
+(display (just-scan "1"))
+(newline)
+(display (just-scan "[2, 3]"))
+(newline)
+(display (just-scan "[2,3,4]"))
+(newline)
+(display (scan&parse "[1, [2, [3, 4]]]"))
+(newline)
+
+
+(define (json->sexp exp)
+  (cases json exp 
+    (nlist (numbers) (map json->sexp numbers))
+    (numval (num) num)
+    (else (error "not proper json"))))
+
+(display (json->sexp (scan&parse "1")))
+(newline)
+
+(display (json->sexp (scan&parse "[2,3,4]")))
+(newline)
+
+(display (json->sexp (scan&parse "[1, [2, [3, 4]]]")))
+(newline)
+
+;;(json sexp) ---json xml or yaml
